@@ -1,20 +1,9 @@
-using SurveyBasket.Api.Services;
-using SurveyBasket.Api.Middlewares;
+using SurveyBasket.Api;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// we will need to register the service
-builder.Services.AddKeyedTransient<IOperationTransient,MacOsServices>("macos");
-builder.Services.AddKeyedTransient<IOperationTransient,WindowsOsService>("windows");
-builder.Services.AddScoped<IPollService, PollService>();
-// if you registered the interface with the same name, it will only take the last one
+builder.Services.AddDependencies();
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -23,7 +12,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 var logger = app.Logger;
-app.UseCustomMiddleware();
 
 app.UseHttpsRedirection();
 
