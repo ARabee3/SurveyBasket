@@ -1,7 +1,10 @@
 using SurveyBasket.Api;
+using SurveyBasket.Api.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDependencies();
+
+builder.Services.AddDependencies(builder.Configuration);
+//builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 var app = builder.Build();
 
 
@@ -14,8 +17,8 @@ if (app.Environment.IsDevelopment())
 var logger = app.Logger;
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
+//app.MapIdentityApi<ApplicationUser>();
 
 app.MapControllers();
 
