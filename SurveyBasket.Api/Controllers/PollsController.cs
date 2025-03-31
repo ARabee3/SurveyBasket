@@ -7,6 +7,7 @@ namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[controller]")] // /api/polls
 [ApiController]
+[Authorize]
 public class PollsController(IPollService pollService) : ControllerBase
 {
 
@@ -14,7 +15,6 @@ public class PollsController(IPollService pollService) : ControllerBase
     //add actions / endpoint
     [HttpGet("")] // verb
     // IActionResults allows me to return whatever i need, data or status code
-    [Authorize]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var polls = await _pollService.GetAllAsync(cancellationToken);
@@ -34,7 +34,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var newPoll = await _pollService.AddAsync(request.Adapt<Poll>(), cancellationToken);
 
-        return CreatedAtAction(nameof(Get), new { Id = newPoll.Id }, newPoll);
+        return CreatedAtAction(nameof(Get), new { Id = newPoll.Id }, newPoll.Adapt<PollResponse>());
     }
     [HttpPut("{Id}")]
     public async Task<IActionResult> Update([FromRoute] int Id, [FromBody] PollRequest request, CancellationToken cancellationToken)
