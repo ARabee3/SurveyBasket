@@ -17,21 +17,21 @@ namespace SurveyBasket.Api.Controllers
         {
             var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 
-            return authResult is null ? BadRequest("Invalid Email/Password") : Ok(authResult);
+            return authResult.IsSuccess ? Ok(authResult.Value) : BadRequest(authResult.Error) ;
         }
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
         {
             var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-            return authResult is null ? BadRequest("Invalid Token") : Ok(authResult);
+            return authResult.IsSuccess ? Ok(authResult.Value) : BadRequest(authResult.Error);
         }   
         [HttpPut("revoke-refresh-token")]
         public async Task<IActionResult> RevokeRefreshTokenAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
         {
             var isRevoked = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-            return isRevoked ? Ok() : BadRequest("Operation Failed") ;
+            return isRevoked.IsSuccess ? Ok() : BadRequest(isRevoked.Error) ;
         }
        
     }

@@ -18,6 +18,10 @@ if (app.Environment.IsDevelopment())
 var logger = app.Logger;
 
 app.UseHttpsRedirection();
+
+//must be Before Authorization (checking CORS then Authorize)
+app.UseCors(); // uses default policy
+
 app.UseAuthorization();
 //app.MapIdentityApi<ApplicationUser>();
 
