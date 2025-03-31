@@ -60,7 +60,7 @@ public static class DependencyInjection
         services.AddOptions<JwtOptions>()
                 .BindConfiguration(JwtOptions.SectionName)
                 .ValidateDataAnnotations()
-                .ValidateOnStart();
+                .ValidateOnStart() ;
 
         services.AddSingleton<IJwtProvider, JwtProvider>();
 

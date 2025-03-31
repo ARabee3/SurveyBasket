@@ -1,31 +1,16 @@
-﻿namespace SurveyBasket.Api.Contracts.Poll;
+﻿using Microsoft.AspNetCore.Identity.Data;
 
-public class LoginRequestValidator : AbstractValidator<PollRequest>
+namespace SurveyBasket.Api.Contracts.Poll;
+
+public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
-        RuleFor(x => x.Title)
+        RuleFor(x => x.Email)
             .NotEmpty()
-            .Length(3, 100);
-
-        RuleFor(x => x.Summary)
-            .NotEmpty()
-            .Length(3, 1500);
-
-        RuleFor(x => x.StartsAt)
-            .NotEmpty()
-            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today));
-
-        RuleFor(x => x.EndsAt)
+            .EmailAddress();
+        RuleFor(x => x.Password)
             .NotEmpty();
+    }
 
-        RuleFor(x => x).
-            Must(HasValidDate)
-            .WithName(nameof(PollRequest.EndsAt))
-            .WithMessage("{PropertyName} must be greater than or equals start date");
-    }
-    private bool HasValidDate(PollRequest value)
-    { 
-       return value.EndsAt >= value.StartsAt;
-    }
 }
