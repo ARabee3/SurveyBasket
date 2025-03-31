@@ -2,7 +2,8 @@ using SurveyBasket.Api;
 using SurveyBasket.Api.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
-
+// you can read configurations from Appsettings (As Dictionary) or environment variables in LaunchSettings 
+// Environment Variables ===> Secrets ===> AppSettings Dev ===> AppSettings
 builder.Services.AddDependencies(builder.Configuration);
 //builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 var app = builder.Build();

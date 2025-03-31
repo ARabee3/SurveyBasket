@@ -20,7 +20,7 @@ public static class DependencyInjection
             .AddSwaggerServices()
             .AddMapsterServices()
             .AddFluentValidationServices()
-            .AddAuthConfig();
+            .AddAuthConfig(configuration);
 
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
@@ -52,13 +52,19 @@ public static class DependencyInjection
         return services;
     }
     
-    private static IServiceCollection AddAuthConfig(this IServiceCollection services)
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services,IConfiguration configuration)
     {
         services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
+        //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.AddOptions<JwtOptions>()
+                .BindConfiguration(JwtOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
         services.AddSingleton<IJwtProvider, JwtProvider>();
 
+        var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -67,17 +73,18 @@ public static class DependencyInjection
             .AddJwtBearer(o =>
             {
                 o.SaveToken = true;
-            o.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("z19AnpfklH2VYoJze2MdtmW8pGTHgw2a")),
-                ValidIssuer = "SurveyBasketApp",
-                ValidAudience = "SurveyBasketAppUsers"
-            };});
-            
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
+                    ValidIssuer = jwtSettings?.Issuer,
+                    ValidAudience = jwtSettings?.Audience
+                };
+            });
+
         return services;
     }
 
