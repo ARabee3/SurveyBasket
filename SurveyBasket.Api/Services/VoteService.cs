@@ -24,10 +24,9 @@ public class VoteService(ApplicationDbContext context) : IVoteService
                                     .Select(q =>  q.Id )
                                     .ToListAsync(cancellationToken);
 
-        if (request.Answers.Select(x => x.QuestionId).SequenceEqual(availableQuestions))  
-            return Result.Failure(VoteErrors.InvalidQuestions);
+        if (!request.Answers.Select(x => x.QuestionId).SequenceEqual(availableQuestions)) { return Result.Failure(VoteErrors.InvalidQuestions); }
 
-        var vote = new Vote
+        var vote = new Vote()
         {
             PollId = pollId,
             UserId = userId,
@@ -37,8 +36,5 @@ public class VoteService(ApplicationDbContext context) : IVoteService
         await _context.AddAsync(vote, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Success();
-
-            
-
     }
 }

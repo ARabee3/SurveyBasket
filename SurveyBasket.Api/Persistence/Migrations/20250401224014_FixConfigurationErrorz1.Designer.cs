@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SurveyBasket.Api.Persistence;
 
@@ -11,9 +12,11 @@ using SurveyBasket.Api.Persistence;
 namespace SurveyBasket.Api.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250401224014_FixConfigurationErrorz1")]
+    partial class FixConfigurationErrorz1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,8 +179,7 @@ namespace SurveyBasket.Api.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QuestionId", "Content")
-                        .IsUnique();
+                    b.HasIndex("QuestionId");
 
                     b.ToTable("Answers");
                 });
@@ -345,10 +347,9 @@ namespace SurveyBasket.Api.Persistence.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.HasIndex("UpdatedById");
+                    b.HasIndex("PollId");
 
-                    b.HasIndex("PollId", "Content")
-                        .IsUnique();
+                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Questions");
                 });
@@ -373,10 +374,9 @@ namespace SurveyBasket.Api.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("PollId");
 
-                    b.HasIndex("PollId", "UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Votes");
                 });
@@ -404,8 +404,7 @@ namespace SurveyBasket.Api.Persistence.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.HasIndex("VoteId", "QuestionId")
-                        .IsUnique();
+                    b.HasIndex("VoteId");
 
                     b.ToTable("VoteAnswers");
                 });
