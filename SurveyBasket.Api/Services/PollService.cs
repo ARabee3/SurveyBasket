@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
+using SurveyBasket.Api.Abstractions;
+using SurveyBasket.Api.Errors;
 using SurveyBasket.Api.Persistence;
 using System.Threading;
 
@@ -10,45 +12,63 @@ public class PollService(ApplicationDbContext context) : IPollService
     private readonly ApplicationDbContext _context = context;
 
  
-    public async Task<IEnumerable<Poll>> GetAllAsync(CancellationToken cancellationToken = default) =>
-        await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
-    public async Task<Poll?> GetAsync(int Id, CancellationToken cancellationToken = default) =>
-        await _context.Polls.FindAsync(Id, cancellationToken);
-
-    public async Task<Poll> AddAsync(Poll request, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PollResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        await _context.AddAsync(request, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-        return request;
+        return await _context.Polls
+               .AsNoTracking()
+               .ProjectToType<PollResponse>() 
+               .ToListAsync(cancellationToken);
     }
-    public async Task<bool> UpdateAsync(int id, Poll poll, CancellationToken cancellationToken = default)
+  
+    public async Task<Result<PollResponse>> GetAsync(int Id, CancellationToken cancellationToken = default)
     {
-        var current = await GetAsync(id, cancellationToken);
-        if (current is null) return false;
+        var result = await _context.Polls.FindAsync(Id, cancellationToken);
+        return result is not null 
+            ? Result.Success(result.Adapt<PollResponse>()) 
+            : Result.Failure<PollResponse>(PollErrors.PollNotFound);
+    }
+
+    public async Task<PollResponse> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
+    {
+        
+        var pollEntity = request.Adapt<Poll>();
+        await _context.AddAsync(pollEntity, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return pollEntity.Adapt<PollResponse>();
+    }
+    public async Task<Result> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken = default)
+    {
+        var current = await _context.Polls.FindAsync(id, cancellationToken); 
+        if (current is null) 
+            return Result.Failure(PollErrors.PollNotFound);
+
         current.Title = poll.Title;
-        current.Summary = poll.Summary; 
+        current.Summary = poll.Summary;
         current.StartsAt = poll.StartsAt;
         current.EndsAt = poll.EndsAt;
         await _context.SaveChangesAsync(cancellationToken);
-        return true;
+        return Result.Success();
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var current = await GetAsync(id, cancellationToken);
-        if (current is null) return false;
+        var current = await _context.Polls.FindAsync(id, cancellationToken);
+        if (current is null)
+            return Result.Failure(PollErrors.PollNotFound);
         _context.Remove(current);
         await _context.SaveChangesAsync(cancellationToken);
-        return true;
+        return Result.Success();
     }
-    public async Task<bool> TogglePublishStatusAsync(int id, CancellationToken cancellationToken)
+
+    public async Task<Result> TogglePublishStatusAsync(int id, CancellationToken cancellationToken)
     {
-        var current = await GetAsync(id, cancellationToken);
-        if (current is null) return false;
+        var current = await _context.Polls.FindAsync(id, cancellationToken);
+        if (current is null)
+            return Result.Failure(PollErrors.PollNotFound);
 
         current.IsPublished = !current.IsPublished;
 
         await _context.SaveChangesAsync(cancellationToken);
-        return true;
+        return Result.Success();
     }
 }
