@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using SurveyBasket.Api.Extensions;
 using System.Reflection;
 using System.Security.Claims;
 
@@ -32,7 +33,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         var entries = ChangeTracker.Entries<AuditableEntity>();
         foreach(var entry in entries)
         {
-            var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userId = _httpContextAccessor.HttpContext?.User.GetUserId()!;
             if (entry.State == EntityState.Added)
             {
                 entry.Property(x => x.CreatedById).CurrentValue = userId;
