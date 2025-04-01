@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SurveyBasket.Api.Abstractions;
 using SurveyBasket.Api.Authentication;
 using SurveyBasket.Api.Contracts.Authentication;
 
@@ -16,23 +17,22 @@ namespace SurveyBasket.Api.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
         {
             var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
+            return authResult.IsSuccess ? Ok(authResult.Value) : Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Description);
 
-            return authResult.IsSuccess ? Ok(authResult.Value) : BadRequest(authResult.Error) ;
         }
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
         {
             var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-            return authResult.IsSuccess ? Ok(authResult.Value) : BadRequest(authResult.Error);
-        }   
+            return authResult.IsSuccess ? Ok(authResult.Value) : Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Description);
+        }
         [HttpPut("revoke-refresh-token")]
         public async Task<IActionResult> RevokeRefreshTokenAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
         {
             var isRevoked = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
-
-            return isRevoked.IsSuccess ? Ok() : BadRequest(isRevoked.Error) ;
+            return isRevoked.IsSuccess ? Ok() : Problem(statusCode: StatusCodes.Status400BadRequest, title: isRevoked.Error.Code, detail: isRevoked.Error.Description);
         }
-       
+
     }
 }

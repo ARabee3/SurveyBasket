@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Routing;
+using SurveyBasket.Api.Abstractions;
 using SurveyBasket.Api.Contracts.Poll;
 using System.Threading;
 
@@ -24,7 +25,9 @@ public class PollsController(IPollService pollService) : ControllerBase
     public async Task<IActionResult> Get([FromRoute] int Id, CancellationToken cancellationToken)
     {
         var result = await _pollService.GetAsync(Id, cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
+        return result.IsSuccess
+           ? Ok(result.Value)
+           : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
     }
 
     [HttpPost("")]
@@ -44,13 +47,13 @@ public class PollsController(IPollService pollService) : ControllerBase
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
     {
         var isDeleted = await _pollService.DeleteAsync(id, cancellationToken);
-        return isDeleted.IsSuccess ? NoContent() : NotFound(isDeleted.Error);
+        return isDeleted.IsSuccess ? NoContent() : Problem(statusCode: StatusCodes.Status404NotFound, title: isDeleted.Error.Code, detail: isDeleted.Error.Description);
     }
 
     [HttpPut("{Id}/togglePublish")]
     public async Task<IActionResult> TogglePublish([FromRoute] int id, CancellationToken cancellationToken)
     {
         var status = await _pollService.TogglePublishStatusAsync(id, cancellationToken);
-        return status.IsSuccess ? NoContent() : NotFound(status.Error);
+        return status.IsSuccess ? NoContent() : Problem(statusCode: StatusCodes.Status404NotFound, title: status.Error.Code, detail: status.Error.Description);
     }
 }
