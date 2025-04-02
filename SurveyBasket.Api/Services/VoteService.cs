@@ -2,6 +2,7 @@
 using SurveyBasket.Api.Abstractions;
 using SurveyBasket.Api.Contracts.Questions;
 using SurveyBasket.Api.Contracts.Votes;
+using SurveyBasket.Api.Entities;
 using SurveyBasket.Api.Errors;
 
 namespace SurveyBasket.Api.Services;
@@ -11,8 +12,10 @@ public class VoteService(ApplicationDbContext context) : IVoteService
     private readonly ApplicationDbContext _context = context;
 
     public async Task<Result> AddAsync(int pollId, string userId, VoteRequest request, CancellationToken cancellationToken = default)
-    {
-        var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.UserId == userId, cancellationToken: cancellationToken);
+    {       
+        
+        var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.UserId == userId, cancellationToken);
+
         if (hasVote)
             return Result.Failure(VoteErrors.DuplicatedVote);
         var pollIsExists = await _context.Polls.AnyAsync(x => x.Id == pollId && x.IsPublished && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken: cancellationToken);
@@ -30,7 +33,12 @@ public class VoteService(ApplicationDbContext context) : IVoteService
         {
             PollId = pollId,
             UserId = userId,
-            VoteAnswers = request.Answers.Adapt<IEnumerable<VoteAnswer>>().ToList()
+            VoteAnswers = request.Answers.Select(a => new VoteAnswer
+            {
+                QuestionId = a.QuestionId,
+                AnswerId = a.AnswerID
+                // VoteId will be set by EF Core relationship fixup
+            }).ToList()
         };
 
         await _context.AddAsync(vote, cancellationToken);
