@@ -1,3 +1,4 @@
+using Serilog;
 using SurveyBasket.Api;
 using SurveyBasket.Api.Persistence;
 var builder = WebApplication.CreateBuilder(args);
@@ -6,7 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Environment Variables ===> Secrets ===> AppSettings Dev ===> AppSettings
 builder.Services.AddDependencies(builder.Configuration);
 //builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration)
+);
+
 var app = builder.Build();
+
 
 
 // Configure the HTTP request pipeline.
